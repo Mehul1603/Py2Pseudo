@@ -1,37 +1,22 @@
-def take_input():
-    n=int(input())
-    m=[]
-    for i in range(7):
-        d={}
-        for j in range(n):
-            reg=input()
-            mark=int(input())
-            d[reg]=mark
-        m+=[d]
-    return m
+n1=int(input())
+n2=int(input())
+n3=int(input())
+n4=int(input())
 
-def find_avg_score(m):
-    df={}
-    for i in m[0].keys():
-        x=0
-        for j in range(len(m)):
-            x+=m[j][i]
-            
-        df[i]=round(x/7,2)
-        
-    
-      
-    items=list(df.items())
-    
-    l=[]
-    val=list(df.values())
-    val.sort(reverse=True)
-    for i in val:
-        for j in range(len(m)):
-            if items[j][1]==i:
-                l+=[list(items[j])]
-                break
-    return l
+lnum=[n1,n2,n3,n4]
 
-m=take_input()
-print(find_avg_score(m))
+lfact=[{n1},{n2},{n3},{n4}]
+
+for i in range(4):
+    for j in range(2,lnum[i]//2+1):
+        if lnum[i]%j==0:
+            lfact[i].add(j)
+
+l1=list(lfact[0].intersection(lfact[1],lfact[2],lfact[3]))
+l1.sort()
+print(l1)
+
+lk=lfact[2].intersection(lfact[3])
+l2=list(lk.difference(lfact[0].intersection(lfact[1])))
+l2.sort()
+print(l2)
