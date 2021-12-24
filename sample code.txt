@@ -1,0 +1,37 @@
+def take_input():
+    n=int(input())
+    m=[]
+    for i in range(7):
+        d={}
+        for j in range(n):
+            reg=input()
+            mark=int(input())
+            d[reg]=mark
+        m+=[d]
+    return m
+
+def find_avg_score(m):
+    df={}
+    for i in m[0].keys():
+        x=0
+        for j in range(len(m)):
+            x+=m[j][i]
+            
+        df[i]=round(x/7,2)
+        
+    
+      
+    items=list(df.items())
+    
+    l=[]
+    val=list(df.values())
+    val.sort(reverse=True)
+    for i in val:
+        for j in range(len(m)):
+            if items[j][1]==i:
+                l+=[list(items[j])]
+                break
+    return l
+
+m=take_input()
+print(find_avg_score(m))
