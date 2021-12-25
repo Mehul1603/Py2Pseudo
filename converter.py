@@ -20,6 +20,30 @@ def remove_whitespaces(s):
             break
     return s, whitespaces
 
+def checkfun(s):
+    global functions_pseudo
+    t=False
+    for i in functions_pseudo.keys():
+        pattern=re.compile(i)
+        matches=pattern.finditer(s)
+        x=0
+        for j in matches:
+            l=list(s)
+            s=j.span()
+            if l[s[0]-1+x]==' ':
+                l.insert(s[0],'CALL ')
+                x+=5
+                t=True
+            else:
+                l.insert(s[0],' CALL ')
+                x+=6
+                t=True
+            s=''
+            for k in l:
+                s+=k
+            
+    return s,t
+
 #Main Functions
 def read(s):
     x=''
@@ -32,26 +56,16 @@ def read(s):
     return s
 
 def compute(s):
-    s='COMPUTE '+ s
+    s,t=checkfun('COMPUTE '+ s)
     return s
 
 def sett(s):
-    '''
-    global functions_pseudo
-    l=s.split()
-    for i in functions_pseudo.keys():
-        for j in range(len(l))::
-            if re.search(r'{}('.format(i),l[j]):
-                l.insert(j,'CALL')
-    s=''
-    for i in l:
-        s+=i+' '
-    '''
-    s='SET '+ s
+    s,t=checkfun('SET '+ s)    
     return s
 
 def prt(s):
     s='PRINT '+s[6:len(s)-1]
+    s,t=checkfun(s)
     return s
 
 def forr(s):
@@ -70,19 +84,23 @@ def forr(s):
                     break
             u=s[3][x:-2]
                 
-            return 'FOR {} = {} to {}'.format(s[1],l,u)
+            s,t=checkfun('FOR {} = {} to {}'.format(s[1],l,u))
+            return s
     else:
-        return 'FOR' + s[3:-1]
+        s,t = checkfun('FOR' + s[3:-1])
+        return s
     
 def iff(s):
     s='IF '+s[3:-1] + ' THEN'
+    s,t=checkfun(s)
     return s
 
 def eliff(s):
     s='ELIF '+s[5:-1] + ' THEN'
+    s,t=checkfun(s)
     return s
 
-def elsee(s):
+def elsee():
     return 'ELSE'
 
 def importt(s):
@@ -92,7 +110,8 @@ def brecon(s):
     return s.upper()
 
 def ret(s):
-    return 'RETURN'+s[6:]
+    s,t = checkfun('RETURN'+s[6:])
+    return s
 
 def fun(lines,l):
 
@@ -130,7 +149,8 @@ def convert_to_pseudo_code(code,name=False,parameters=None):
         lines[i], whitespaces = remove_whitespaces(lines[i])
         
         #READ
-        if re.search('input()',lines[i]) and lines[i][-1]!=':':
+        s,t=checkfun(lines[i])
+        if re.search('input()',lines[i]) and lines[i][-1]!=':' and not t:
             lines[i]=read(lines[i])
             i+=1
         
@@ -185,7 +205,7 @@ def convert_to_pseudo_code(code,name=False,parameters=None):
             
         #ELSE
         elif lines[i][0:-1]=='else':
-            lines[i]=elsee(lines[i])
+            lines[i]=elsee()
             i+=1
             
         #import
