@@ -36,6 +36,17 @@ def compute(s):
     return s
 
 def sett(s):
+    '''
+    global functions_pseudo
+    l=s.split()
+    for i in functions_pseudo.keys():
+        for j in range(len(l))::
+            if re.search(r'{}('.format(i),l[j]):
+                l.insert(j,'CALL')
+    s=''
+    for i in l:
+        s+=i+' '
+    '''
     s='SET '+ s
     return s
 
@@ -77,10 +88,16 @@ def elsee(s):
 def importt(s):
     return 'IMPORT' + s[6:]
 
-def fun(lines,i):
+def brecon(s):
+    return s.upper()
+
+def ret(s):
+    return 'RETURN'+s[6:]
+
+def fun(lines,l):
 
     global functions_pseudo
-    s=lines[i]
+    s=lines[l]
     name=''
     for j in range(4,len(s)):
         if s[j]=='(':
@@ -88,32 +105,26 @@ def fun(lines,i):
         else:
             name+=s[j]
     
+    l+=1
+    function_code=''
     
-    i+=1
-    function_code=s+'\n'
-    
-    while i<len(lines):
-        code=lines[i]
+    while l<len(lines):
+        code=lines[l]
         st,whitespaces = remove_whitespaces(code)
         if len(whitespaces)<4:
             break
         else:
-            function_code+=code+'\n'
-        i+=1
-    functions_pseudo[name]=convert_to_pseudo_code(function_code,f,s[4+len(name)+1:-2])
-    return i
+            function_code+=code[4:]+'\n'
+            l+=1
+    functions_pseudo[name]=convert_to_pseudo_code(function_code,name,s[4+len(name)+1:-2])
+    return l
             
-def convert_to_pseudo_code(code,f=False,parameters=None):
+def convert_to_pseudo_code(code,name=False,parameters=None):
 
     lines=code.split('\n')
     clear_code(lines)
-    
-    if f and parameters:
-        lines[0]='Input: '+ parameters
-        i=1
-    else:
-        i=0
         
+    i=0
     while i<len(lines):
     
         lines[i], whitespaces = remove_whitespaces(lines[i])
@@ -182,13 +193,22 @@ def convert_to_pseudo_code(code,f=False,parameters=None):
             lines[i]=importt(lines[i])
             i+=1
 
+        #break/continue
+        elif lines[i]=='break' or lines[i]=='continue':
+            lines[i]=brecon(lines[i])
+            i+=1
+
+        #return
+        elif lines[i][0:6]=='return':
+            lines[i]=ret(lines[i])
+            i+=1
+
         #def
         elif lines[i][0:3]=='def':
             k=fun(lines,i)
-            p=i
-            while p<k:
+            for l in range(k-i):
                 del lines[i]
-                p+=1
+            continue
         
         #COMPUTE
         else:
@@ -197,6 +217,11 @@ def convert_to_pseudo_code(code,f=False,parameters=None):
         
         lines[i-1]=whitespaces+lines[i-1]
         
+    if name and parameters:
+        lines.reverse()
+        lines.append('Input: '+parameters)
+        lines.reverse()
+    
     output=''
     for i in lines:
         output+=i+'\n'
