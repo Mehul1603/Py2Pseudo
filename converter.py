@@ -29,19 +29,18 @@ def checkfun(s):
         x=0
         for j in matches:
             l=list(s)
-            s=j.span()
-            if l[s[0]-1+x]==' ':
-                l.insert(s[0],'CALL ')
+            sp=j.span()
+            if l[sp[0]-1+x]==' ':
+                l.insert(sp[0],'CALL ')
                 x+=5
                 t=True
             else:
-                l.insert(s[0],' CALL ')
+                l.insert(sp[0],' CALL ')
                 x+=6
                 t=True
             s=''
             for k in l:
-                s+=k
-            
+                s+=k  
     return s,t
 
 #Main Functions
@@ -113,6 +112,9 @@ def ret(s):
     s,t = checkfun('RETURN'+s[6:])
     return s
 
+def direct_call(s):
+    return 'CALL ' + s
+
 def fun(lines,l):
 
     global functions_pseudo
@@ -140,6 +142,7 @@ def fun(lines,l):
             
 def convert_to_pseudo_code(code,name=False,parameters=None):
 
+    global functions_pseudo
     lines=code.split('\n')
     clear_code(lines)
         
@@ -160,7 +163,7 @@ def convert_to_pseudo_code(code,name=False,parameters=None):
             i+=1
         
         #SET
-        elif re.match(r'^[\w]+[\s]?=[\s]?',lines[i]):
+        elif re.match(r'^[\w]+[,]?[\s]?[\w]*[\s]?=[\s]?',lines[i]):
             s1=''
             x=lines[i]
             for j in range(len(x)):
@@ -229,6 +232,20 @@ def convert_to_pseudo_code(code,name=False,parameters=None):
             for l in range(k-i):
                 del lines[i]
             continue
+
+        #directly call
+        elif re.match(r'^[\w_]+\(',lines[i]):
+            s=''
+            for j in lines[i]:
+                if j!='(':
+                    s+=j
+                else:
+                    break
+            if s in functions_pseudo.keys():
+                lines[i]=direct_call(lines[i])
+            else:
+                lines[i]=compute(lines[i])
+            i+=1
         
         #COMPUTE
         else:
