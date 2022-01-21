@@ -72,6 +72,11 @@ def forr(s):
         s=s.split()
         if ',' not in s[3]:
             u=s[3][6:-2]
+            if u.isdigit():
+                u=int(u)-1
+            else:
+                u+='-1'
+
             return 'FOR {} = 0 to {}'.format(s[1],u)
         else:
             l=''
@@ -82,6 +87,10 @@ def forr(s):
                     x=i+1
                     break
             u=s[3][x:-2]
+            if u.isdigit():
+                u=int(u)-1
+            else:
+                u+='-1'
                 
             s,t=checkfun('FOR {} = {} to {}'.format(s[1],l,u))
             return s
@@ -89,13 +98,18 @@ def forr(s):
         s,t = checkfun('FOR' + s[3:-1])
         return s
     
+def whilee(s):
+    s='WHILE' + s[5:-1]
+    s,t=checkfun(s)
+    return s
+    
 def iff(s):
     s='IF '+s[3:-1] + ' THEN'
     s,t=checkfun(s)
     return s
 
 def eliff(s):
-    s='ELIF '+s[5:-1] + ' THEN'
+    s='ELSE IF '+s[5:-1] + ' THEN'
     s,t=checkfun(s)
     return s
 
@@ -140,7 +154,7 @@ def fun(lines,l):
     functions_pseudo[name]=convert_to_pseudo_code(function_code,name,s[4+len(name)+1:-2])
     return l
             
-def convert_to_pseudo_code(code,name=False,parameters=None):
+def convert_to_pseudo_code(code,name=None,parameters=None):
 
     global functions_pseudo
     lines=code.split('\n')
@@ -153,7 +167,7 @@ def convert_to_pseudo_code(code,name=False,parameters=None):
         
         #READ
         s,t=checkfun(lines[i])
-        if re.search('input()',lines[i]) and lines[i][-1]!=':' and not t:
+        if re.search(r'input\(\)',lines[i]) and lines[i][-1]!=':' and not t:
             lines[i]=read(lines[i])
             i+=1
         
@@ -161,39 +175,15 @@ def convert_to_pseudo_code(code,name=False,parameters=None):
         elif lines[i][0:5]=='print':
             lines[i]=prt(lines[i])
             i+=1
-        
-        #SET
-        elif re.match(r'^[\w]+[,]?[\s]?[\w]*[\s]?=[\s]?',lines[i]):
-            s1=''
-            x=lines[i]
-            for j in range(len(x)):
-                if x[j]!='=':
-                    s1+=x[j]
-                else:
-                    x=x[j+1::]
-                    break
-            s2=''
-            for j in range(len(x)):
-                if x[j]==' ' and j==0:
-                    continue
-                elif not(x[j].isalnum()):
-                    break
-                else:
-                    s2+=x[j]
-                    
-            s1.lstrip()
-            s1.rstrip()
-            s2.lstrip()
-            s2.rstrip()
-            if s1==s2:
-                lines[i]=compute(lines[i])
-            else:
-                lines[i]=sett(lines[i])
-            i+=1
                 
         #FOR
         elif lines[i][0:3]=='for':
             lines[i]=forr(lines[i])
+            i+=1
+            
+        #WHILE
+        elif lines[i][0:5]=='while':
+            lines[i]=whilee(lines[i])
             i+=1
             
         #IF
@@ -243,6 +233,20 @@ def convert_to_pseudo_code(code,name=False,parameters=None):
                     break
             if s in functions_pseudo.keys():
                 lines[i]=direct_call(lines[i])
+            else:
+                lines[i]=compute(lines[i])
+            i+=1
+        
+        
+        #SET
+        elif re.match(r'[\w]+[\s]?=[\s]?',lines[i]):
+            for j in range(len(lines[i])):
+                if lines[i][j] == '=':
+                    s=lines[i][j+1:len(lines[i])]
+                    s=s.lstrip()
+                    break
+            if (re.search("[\'\"]{1}[+\-*/]{1}[\'\"]{1}",s) or not re.search(r'[+\-*/]',s)) and not re.search(r'[\w]+\([\w\[\]\{\}\(\)]*\)',s):
+                lines[i]=sett(lines[i])
             else:
                 lines[i]=compute(lines[i])
             i+=1
